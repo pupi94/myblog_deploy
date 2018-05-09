@@ -57,9 +57,6 @@ set :puma_preload_app, true
 set :puma_worker_timeout, nil
 set :puma_init_active_record, true  # Change to false when not using ActiveRecord
 
-set :nginx_sites_available_path, "/usr/local/webserver/nginx/sites-available"
-set :nginx_sites_enabled_path, "/usr/local/webserver/nginx/sites-enabled"
-
 namespace :puma do
   desc 'Create Directories for Puma Pids and Socket'
   task :make_dirs do
@@ -78,3 +75,11 @@ namespace :puma do
   before :start, :make_dirs
   before :config, :make_shared_dir
 end
+#
+# task :restart_sidekiq do
+#   on roles(:worker) do
+#     execute :service, "sidekiq restart"
+#   end
+# end
+#
+# after "deploy:published", "restart_sidekiq"
