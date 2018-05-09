@@ -29,6 +29,13 @@ set :deploy_to, "/var/www/myblog"
 # Default value for local_user is ENV['USER']
 # set :local_user, -> { `git config user.name`.chomp }
 
+# Rails options
+# Skip migration if files in db/migrate were not modified, Defaults to false
+set :conditionally_migrate, true
+
+# If you need to touch public/images, public/javascripts, and public/stylesheets on each deploy
+#set :normalize_asset_timestamps, %w{public/images public/javascripts public/stylesheets}
+
 # Default value for keep_releases is 5
 set :keep_releases, 5
 set :pty, true
@@ -44,7 +51,30 @@ set :puma_state,      "#{shared_path}/tmp/pids/puma.state"
 set :puma_pid,        "#{shared_path}/tmp/pids/puma.pid"
 set :puma_access_log, "#{release_path}/log/puma.error.log"
 set :puma_error_log,  "#{release_path}/log/puma.access.log"
+
 set :ssh_options,     { forward_agent: true, user: fetch(:user), keys: %w(~/.ssh/id_rsa.pub), port: 22 }
 set :puma_preload_app, true
 set :puma_worker_timeout, nil
 set :puma_init_active_record, true  # Change to false when not using ActiveRecord
+
+set :nginx_sites_available_path, "/usr/local/webserver/nginx/sites-available"
+set :nginx_sites_enabled_path, "/usr/local/webserver/nginx/sites-enabled"
+
+namespace :puma do
+  desc 'Create Directories for Puma Pids and Socket'
+  task :make_dirs do
+    on roles(:app) do
+      execute "mkdir #{shared_path}/tmp/sockets -p"
+      execute "mkdir #{shared_path}/tmp/pids -p"
+    end
+  end
+
+  task :make_shared_dir do
+    on roles(:app) do
+      execute "mkdir #{shared_path}"
+    end
+  end
+
+  before :start, :make_dirs
+  before :config, :make_shared_dir
+end

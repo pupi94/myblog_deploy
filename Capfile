@@ -16,9 +16,9 @@ require "capistrano/rails/migrations"
 
 require 'capistrano/puma'
 install_plugin Capistrano::Puma, load_hooks: false  # Default puma tasks without hooks
-install_plugin Capistrano::Puma::Workers  # if you want to control the workers (in cluster mode)
+#install_plugin Capistrano::Puma::Workers  # if you want to control the workers (in cluster mode)
 #install_plugin Capistrano::Puma::Jungle # if you need the jungle tasks
-install_plugin Capistrano::Puma::Monit, load_hooks: false   # if you need the monit tasks
+#install_plugin Capistrano::Puma::Monit, load_hooks: false   # if you need the monit tasks
 install_plugin Capistrano::Puma::Nginx  # if you want to upload a nginx site template
 
 # Load custom tasks from `lib/capistrano/tasks` if you have any defined
