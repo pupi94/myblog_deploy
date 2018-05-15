@@ -21,7 +21,7 @@ set :deploy_to, "/var/www/myblog"
 # append :linked_files, "config/database.yml"
 
 # Default value for linked_dirs is []
-# append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"
+append :linked_dirs, 'bin', "log", "tmp/pids", "tmp/cache", "tmp/sockets"
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
@@ -42,7 +42,7 @@ set :pty, true
 
 set :use_sudo, false
 set :deploy_via, :remote_cache
-set :stages, %w(integration production)
+set :stages, %w[integration production]
 
 set :puma_threds,  [4, 16]
 set :puma_workers, 0
