@@ -10,13 +10,6 @@ ask :branch, 'master'
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/var/www/myblog"
 
-# Default value for :format is :airbrussh.
-# set :format, :airbrussh
-
-# You can configure the Airbrussh format using :format_options.
-# These are the defaults.
-# set :format_options, command_output: true, log_file: "log/capistrano.log", color: :auto, truncate: :auto
-
 # Default value for :linked_files is []
 # append :linked_files, "config/database.yml"
 
@@ -38,8 +31,9 @@ set :conditionally_migrate, true
 
 # Default value for keep_releases is 5
 set :keep_releases, 5
-set :pty, true
+set :pty, false
 
+# puma相关配置
 set :use_sudo, false
 set :deploy_via, :remote_cache
 set :stages, %w[integration production]
@@ -56,6 +50,26 @@ set :ssh_options,     { forward_agent: true, user: fetch(:user), keys: %w(~/.ssh
 set :puma_preload_app, true
 set :puma_worker_timeout, nil
 set :puma_init_active_record, true  # Change to false when not using ActiveRecord
+
+# sidekiq相关配置
+# ensure this path exists in production before deploying.
+set :sidekiq_pid, File.join(shared_path, 'tmp', 'pids', 'sidekiq.pid')
+set :sidekiq_env, fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
+set :sidekiq_log, File.join(shared_path, 'log', 'sidekiq.log')
+set :sidekiq_config, "#{current_path}/config/sidekiq.yml"
+#set :sidekiq_options_per_process, ["--queue critical", "--queue default --queue low"]
+
+set :sidekiq_role, :app
+set :sidekiq_monit_use_sudo, false
+
+# sidekiq monit
+set :sidekiq_monit_conf_dir, '/etc/monit/conf.d'
+set :monit_bin, '/usr/bin/monit'
+
+set :service_unit_name, "sidekiq-#{fetch(:application)}-#{fetch(:stage)}.service"
+
+SSHKit.config.command_map[:sidekiq] = "bundle exec sidekiq"
+SSHKit.config.command_map[:sidekiqctl] = "bundle exec sidekiqctl"
 
 namespace :puma do
   desc 'Create Directories for Puma Pids and Socket'
@@ -75,11 +89,3 @@ namespace :puma do
   before :start, :make_dirs
   before :config, :make_shared_dir
 end
-#
-# task :restart_sidekiq do
-#   on roles(:worker) do
-#     execute :service, "sidekiq restart"
-#   end
-# end
-#
-# after "deploy:published", "restart_sidekiq"
