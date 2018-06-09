@@ -11,7 +11,7 @@ set :repo_url, "git@github.com:puping94/myblog.git"
 set :deploy_to, "/var/www/myblog"
 
 # Default value for :linked_files is []
-append :linked_files, "config/database.yml"
+append :linked_files, "config/database.yml", "config/master.key"
 
 # Default value for linked_dirs is []
 append :linked_dirs, 'bin', "log", "tmp/pids", "tmp/cache", "tmp/sockets", 'public/system'
@@ -59,23 +59,3 @@ set :service_unit_name, "sidekiq-#{fetch(:application)}-#{fetch(:stage)}.service
 
 SSHKit.config.command_map[:sidekiq] = "bundle exec sidekiq"
 SSHKit.config.command_map[:sidekiqctl] = "bundle exec sidekiqctl"
-
-
-namespace :puma do
-  desc 'Create Directories for Puma Pids and Socket'
-  task :make_dirs do
-    on roles(:app) do
-      execute "mkdir #{shared_path}/tmp/sockets -p"
-      execute "mkdir #{shared_path}/tmp/pids -p"
-    end
-  end
-
-  task :make_shared_dir do
-    on roles(:app) do
-      execute "mkdir #{shared_path}"
-    end
-  end
-
-  before :start, :make_dirs
-  before :config, :make_shared_dir
-end
